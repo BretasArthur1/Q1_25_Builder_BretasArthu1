@@ -2,7 +2,7 @@ mod programs;
 
 #[cfg(test)]
 mod tests {
-    use crate::programs::Turbin3_prereq::{CompleteArgs, Turbin3PrereqProgram, UpdateArgs};
+    use crate::programs::Turbin3_prereq::{CompleteArgs, Turbin3PrereqProgram}; // UpdateArgs
     use solana_client::rpc_client::RpcClient;
     use solana_program::{pubkey::Pubkey, system_instruction::transfer, system_program};
     use solana_sdk::{
@@ -28,7 +28,7 @@ mod tests {
 
     #[test]
     fn airdrop() {
-        let keypair = read_keypair_file("dev-wallet.json").expect("Wallet file not found");
+        let keypair = read_keypair_file("turbin3-wallet.json").expect("Wallet file not found");
         let client = RpcClient::new(RPC_URL);
         match client.request_airdrop(&keypair.pubkey(), 2_000_000_000u64) {
             Ok(signature) => {

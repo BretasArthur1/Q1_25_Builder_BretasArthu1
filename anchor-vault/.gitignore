@@ -1,7 +1,3 @@
-*wallet*.json
-*.png
-*.jpg
-
 .anchor
 .DS_Store
 target
