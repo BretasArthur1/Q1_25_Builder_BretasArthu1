@@ -1,4 +1,7 @@
-use anchor_lang::{prelude::*, system_program::{Transfer, transfer}};
+use anchor_lang::prelude::*;
+use anchor_lang::system_program::{Transfer, transfer};
+use anchor_lang::solana_program::program::invoke_signed;
+use anchor_lang::solana_program::system_instruction;
 
 declare_id!("GhJ9VpsWDDu3Zum2XaTkScHh83wqXB94iUrYUnEFQvin");
 
@@ -57,9 +60,9 @@ pub struct Initialize <'info> {
 }
 
 impl<'info> Initialize<'info> {
-    pub fn Initialize(&mut self, bump: &InitializeBumps) -> Result<()> {
-        self.state.vault_bump = bump.vault;
-        self.state.state_bump = bump.state;
+    pub fn initialize(&mut self, bumps: &InitializeBumps) -> Result<()> {
+        self.vault_state.vault_bump = bumps.vault_state;
+        self.vault_state.state_bump = bumps.vault;
         Ok(())
     }
 }
@@ -95,7 +98,7 @@ impl<'info> Deposit<'info> {
         };
 
         let cpi_ctx: CpiContext<'_, '_, '_, 'info, Transfer<'info>> = CpiContext::new(cpi_program, cpi_accounts);
-        transfer(cpi_ctx, lamports: amount)?;
+        transfer(cpi_ctx, amount)?;
         Ok(())
     }
 }
@@ -108,12 +111,12 @@ pub struct Withdraw<'info> {
     #[account(
         mut,
         seeds = [b"vault", user.key().as_ref()],
-        bump = vault_state.state_bump
+        bump = vault_state.vault_bump
     )]
     pub vault: SystemAccount<'info>,
     #[account(
         seeds = [b"state", user.key().as_ref()],
-        bump = vault_state.vault_bump
+        bump = vault_state.state_bump
     )]
     pub vault_state: Account<'info, VaultState>,
     pub system_program: Program<'info, System>,
@@ -126,13 +129,16 @@ impl<'info> Withdraw<'info> {
             from: self.vault.to_account_info(),
             to: self.user.to_account_info()
         };
-        let vault_state_key = self.vault_state.key();
-    
-        let seeds = &[b"vault", vault_state_key.as_ref() &[self.state.vault_bump]];
+        let seeds = &[
+            b"vault",
+            self.vault_state.to_account_info().key.as_ref(),
+            &[self.vault_state.vault_bump],
+        ];
         let signer_seeds = &[&seeds[..]];
-    
-        let cpi_ctx: CpiContext<'_, '_, '_, 'info, Transfer<'info>> = CpiContext::new(cpi_program, cpi_accounts);
-        transfer(cpi_ctx, lamports: amount)?;
+
+        let cpi_ctx: CpiContext<'_, '_, '_, 'info, Transfer<'info>> =
+            CpiContext::new_with_signer(cpi_program, cpi_accounts, signer_seeds);
+        transfer(cpi_ctx, amount)?;
         Ok(())
     }
 }
@@ -190,8 +196,4 @@ impl<'info> Close<'info> {
 pub struct VaultState {
     pub vault_bump: u8,
     pub state_bump: u8,
-}
-
-impl Space for VaultState {
-    const INIT_SPACE: usize = 8 + 1 + 1;
 }
