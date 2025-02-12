@@ -10,12 +10,19 @@ use crate::state::user_account::UserAccount;
 use crate::error::ErrorCode;
 use crate::constants::TEST_USDC_MINT;
 use crate::events::TransactionSuccessful;
+
+/// Instruction context for creating an escrow payment.
+/// This struct defines all the accounts needed to create an escrow payment
+/// for SWQuery services.
 #[derive(Accounts)]
 #[instruction(seed: u64, plan_id: u64)]
 pub struct MakeEscrow<'info> {
+    /// The user creating and paying for the escrow, must be the transaction signer
     #[account(mut)]
     pub user: Signer<'info>,
 
+    /// New escrow account that will be created to store payment details.
+    /// The account address is derived from "escrow", user's pubkey and a seed number
     #[account(
         init,
         payer = user,
@@ -25,6 +32,8 @@ pub struct MakeEscrow<'info> {
     )]
     pub escrow: Account<'info, SwqueryEscrow>,
 
+    /// User's account storing subscription and request information.
+    /// Created if it doesn't exist yet.
     #[account(
         init_if_needed,
         payer = user,
@@ -34,29 +43,36 @@ pub struct MakeEscrow<'info> {
     )]
     pub user_account: Account<'info, UserAccount>,
 
-    /// The mint of the token usdc token
+    /// The USDC token mint account used for payments
     pub usdc_mint: InterfaceAccount<'info, Mint>,
 
-    /// CHECK: This is the SWQuery account that will receive the payment. It's safe because we only use it as a destination for payments
+    /// The SWQuery's main account that will receive the payment
+    /// CHECK: This is safe because we only use it as a destination for payments
     pub swquery: AccountInfo<'info>,
 
-    /// CHECK: This is the user's token account that will be debited. It's safe because we only use it as a source for payments
+    /// The user's USDC token account that will be debited
+    /// CHECK: This is safe because we only use it as a source for payments
     #[account(mut)]
     pub user_token_account: InterfaceAccount<'info, TokenAccount>,
 
-    /// CHECK: This is the SWQuery's token account that will be credited. It's safe because we only use it as a destination for payments
+    /// SWQuery's USDC token account that will receive the payment
+    /// CHECK: This is safe because we only use it as a destination for payments
     #[account(mut)]
     pub swquery_token_account: InterfaceAccount<'info, TokenAccount>,
 
+    // Required by Solana for creating accounts and handling tokens
     pub system_program: Program<'info, System>,
-
     pub token_program: Interface<'info, TokenInterface>,
-
     pub associated_token_program: Program<'info, AssociatedToken>,
 }
 
 impl<'info> MakeEscrow<'info> {
     /// Updates the escrow account with the details of the selected plan.
+    /// 
+    /// # Arguments
+    /// * `seed` - Unique identifier for this escrow
+    /// * `plan` - The subscription plan details
+    /// * `bumps` - PDA bump seeds for account derivation
     pub fn save_escrow(&mut self, seed: u64, plan: &Plan, bumps: &MakeEscrowBumps) -> Result<()> {
         self.escrow.set_inner(SwqueryEscrow {
             seed,
@@ -69,7 +85,11 @@ impl<'info> MakeEscrow<'info> {
         Ok(())
     }
 
-    /// Transfers tokens from the user's account to the SWQuery account using transfer_checked.
+    /// Transfers USDC tokens from the user's account to the SWQuery account.
+    /// Uses transfer_checked for additional safety by verifying decimals.
+    /// 
+    /// # Arguments
+    /// * `deposit` - Amount of USDC tokens to transfer (in base units)
     pub fn deposit(&mut self, deposit: u64) -> Result<()> {
         let transfer_accounts = TransferChecked {
             from: self.user_token_account.to_account_info(),
@@ -81,7 +101,18 @@ impl<'info> MakeEscrow<'info> {
         transfer_checked(cpi_ctx, deposit, self.usdc_mint.decimals)
     }
 
-    /// Executes the complete operation: deposits the tokens, saves the escrow data, and updates the user account.
+    /// Main function that handles the complete escrow creation process:
+    /// 1. Validates the USDC mint
+    /// 2. Finds and validates the selected plan
+    /// 3. Transfers tokens from user to SWQuery
+    /// 4. Creates and initializes the escrow account
+    /// 5. Updates the user's subscription information
+    /// 6. Emits a success event
+    /// 
+    /// # Arguments
+    /// * `seed` - Unique identifier for this escrow
+    /// * `plan_id` - ID of the subscription plan being purchased
+    /// * `bumps` - PDA bump seeds for account derivation
     pub fn make_escrow(&mut self, seed: u64, plan_id: u64, bumps: &MakeEscrowBumps) -> Result<()> {
         if self.usdc_mint.key() != TEST_USDC_MINT {
             return Err(ErrorCode::InvalidMint.into());
