@@ -63,11 +63,11 @@ fi
 echo "USDC Account address: $USDC_ACCOUNT"
 
 # =====================================================
-# Mint initial USDC tokens (1 million with 9 decimals)
+# Mint initial USDC tokens (1000 with 9 decimals)
 # =====================================================
 echo "Minting USDC tokens..."
-# 1,000,000 * 10^9 = 1000000000000000 base units
-spl-token mint $USDC_MINT 1000000000000000
+# 1,000 * 10^9 = 1000000000000 base units
+spl-token mint $USDC_MINT 1000000000000
 
 # =====================================================
 # Build the Anchor program

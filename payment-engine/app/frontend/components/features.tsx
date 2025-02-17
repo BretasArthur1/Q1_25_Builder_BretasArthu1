@@ -1,6 +1,5 @@
 "use client"
 
-import { motion } from "framer-motion"
 import { LineChart, ShieldCheck, Wallet, Search } from "lucide-react"
 
 export function Features() {
@@ -14,7 +13,7 @@ export function Features() {
     {
       title: "Secure Blockchain Integration",
       description:
-        "Connect securely to multiple blockchains with our state-of-the-art integration and protection measures.",
+        "Integrate our SDK into your application to analyze wallet activities and transactions.",
       icon: ShieldCheck,
     },
     {

@@ -17,7 +17,7 @@ const { BN } = anchor;
 // USDC mint address that matches the TEST_USDC_MINT constant in the Rust program
 // This is the only token mint that the program will accept for payments
 // In production, this would be the real USDC mint address
-const USDC_MINT = new PublicKey("DBDETZYPRVU8uokfg86f3W6f6dwzTW3i7XFDhr5PztNx");
+const USDC_MINT = new PublicKey("7hUvjnJXF8gbdrSf2HZGnMJb4LwwD8cXM8wRhBEx2QDz");
 
 // Create a new keypair to simulate the SWQuery service account
 // In production, this would be SWQuery's actual account that receives payments
@@ -112,21 +112,31 @@ describe("payment-engine tests (localnet)", () => {
     /**
      * Mint Test Tokens
      * ---------------
-     * Mint 1 million test USDC tokens to the user's account
+     * Mint 10 test USDC tokens to the user's account
      * Using 9 decimal places (standard for USDC), so the actual amount is:
-     * 1,000,000 * 10^9 = 1,000,000,000,000,000 base units
+     * 10 * 10^9 = 10,000,000,000 base units
      */
-    await mintTo(
-      provider.connection,
-      Keypair.fromSecretKey(Uint8Array.from(walletSecret)),
-      USDC_MINT,
-      userUsdcAta,
-      provider.wallet.publicKey,
-      1000000 * 1e9,
-      [],
-      undefined,
-      TOKEN_PROGRAM_ID
-    );
+    try {
+      await mintTo(
+        provider.connection,
+        Keypair.fromSecretKey(Uint8Array.from(walletSecret)),
+        USDC_MINT,
+        userUsdcAta,
+        provider.wallet.publicKey,
+        10 * 1e9,
+        [],
+        undefined,
+        TOKEN_PROGRAM_ID
+      );
+    } catch (error) {
+      console.error("Error minting tokens:", error);
+      console.log("Checking token balances...");
+      const balance = await provider.connection.getTokenAccountBalance(userUsdcAta);
+      console.log("User USDC balance:", balance.value.uiAmount);
+      if (balance.value.uiAmount === 0) {
+        throw new Error("Failed to setup test tokens");
+      }
+    }
   });
 
   describe("make-escrow instruction", () => {

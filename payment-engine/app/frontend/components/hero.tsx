@@ -1,6 +1,5 @@
 import React from "react"
-
-
+import Link from "next/link"
 
 export function Hero() {
   return (
@@ -19,9 +18,12 @@ export function Hero() {
           </p>
 
           <div className="flex flex-wrap items-center justify-center w-full">
-            <button className="button-primary mx-4" onClick={() => window.location.href = "/pricing"}>
+            <Link href="/pricing" className="button-primary mx-4">
               Plans
-            </button>
+            </Link>
+            <Link href= "dashboard" className="button-primary mx-4">
+              Dashboard
+            </Link>
           </div>
         </div>
       </div>
