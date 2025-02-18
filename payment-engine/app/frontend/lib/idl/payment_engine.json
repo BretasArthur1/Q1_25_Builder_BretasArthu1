@@ -1,0 +1,325 @@
+{
+  "address": "AeaX15Xn4YCSLGBvf1EMdjHViewi28odizgfyQ3RLD9e",
+  "metadata": {
+    "name": "payment_engine",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "make_escrow",
+      "discriminator": [
+        200,
+        121,
+        247,
+        236,
+        215,
+        67,
+        237,
+        104
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "docs": [
+            "The user creating and paying for the escrow, must be the transaction signer"
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "escrow",
+          "docs": [
+            "New escrow account that will be created to store payment details.",
+            "The account address is derived from \"escrow\", user's pubkey and a seed number"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  115,
+                  99,
+                  114,
+                  111,
+                  119
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              },
+              {
+                "kind": "arg",
+                "path": "seed"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user_account",
+          "docs": [
+            "User's account storing subscription and request information.",
+            "Created if it doesn't exist yet."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              }
+            ]
+          }
+        },
+        {
+          "name": "usdc_mint",
+          "docs": [
+            "The USDC token mint account used for payments"
+          ]
+        },
+        {
+          "name": "swquery",
+          "docs": [
+            "The SWQuery's main account that will receive the payment"
+          ]
+        },
+        {
+          "name": "user_token_account",
+          "docs": [
+            "The user's USDC token account that will be debited"
+          ],
+          "writable": true
+        },
+        {
+          "name": "swquery_token_account",
+          "docs": [
+            "SWQuery's USDC token account that will receive the payment"
+          ],
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        }
+      ],
+      "args": [
+        {
+          "name": "seed",
+          "type": "u64"
+        },
+        {
+          "name": "plan_id",
+          "type": "u64"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "SwqueryEscrow",
+      "discriminator": [
+        201,
+        7,
+        3,
+        252,
+        222,
+        197,
+        3,
+        186
+      ]
+    },
+    {
+      "name": "UserAccount",
+      "discriminator": [
+        211,
+        33,
+        136,
+        16,
+        186,
+        110,
+        242,
+        127
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "TransactionSuccessful",
+      "discriminator": [
+        29,
+        31,
+        62,
+        220,
+        163,
+        113,
+        22,
+        69
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidTokenAmount",
+      "msg": "Invalid token amount."
+    },
+    {
+      "code": 6001,
+      "name": "SignatureNotVerified",
+      "msg": "User signature not verified."
+    },
+    {
+      "code": 6002,
+      "name": "PlanNotFound",
+      "msg": "Plan not found."
+    },
+    {
+      "code": 6003,
+      "name": "MathOverflow",
+      "msg": "Arithmetic overflow."
+    },
+    {
+      "code": 6004,
+      "name": "InvalidMint",
+      "msg": "Invalid mint."
+    }
+  ],
+  "types": [
+    {
+      "name": "Plan",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": "u64"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "price",
+            "type": "u64"
+          },
+          {
+            "name": "requests",
+            "type": "u32"
+          },
+          {
+            "name": "description",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SwqueryEscrow",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "seed",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "swquery",
+            "type": "pubkey"
+          },
+          {
+            "name": "usdc_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "usdc_amount",
+            "type": "u64"
+          },
+          {
+            "name": "selected_plan",
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "Plan"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "TransactionSuccessful",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "plan_id",
+            "type": "u64"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UserAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "total_requests",
+            "type": "u64"
+          },
+          {
+            "name": "subscribed_plans",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "Plan"
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

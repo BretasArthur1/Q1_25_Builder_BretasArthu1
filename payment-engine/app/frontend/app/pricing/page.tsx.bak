@@ -17,8 +17,6 @@ import {
   ASSOCIATED_TOKEN_PROGRAM_ID
 } from "@solana/spl-token"
 
-// Subscription tiers configuration
-// Each tier represents a different plan level with specific features and pricing
 const tiers = [
   {
     name: 'Basic',
@@ -55,19 +53,16 @@ const tiers = [
   },
 ]
 
-// Constants for USDC token and authority
+// Define constants directly in this file
 const TEST_USDC_MINT_KEY = new PublicKey("9ThGirbgEtRrjwtg1DVZ4fD5BkPAWtseYpgrsLH3NFu8");
 const SWQUERY_AUTHORITY = new PublicKey("9qSchFvHkadxQkSpY8T5sX4iTJRT9go21jFgAWiGLsue");
 
 export default function PricingPage() {
-  // Wallet and connection hooks for Solana interaction
   const { publicKey } = useWallet();
   const { connection } = useConnection();
   const anchorWallet = useAnchorWallet();
-  // Track loading state for each tier's purchase button
   const [loading, setLoading] = useState<Record<number, boolean>>({});
 
-  // Handle the purchase of a subscription plan
   const handlePurchase = useCallback(async (tier: number) => {
     if (!publicKey || !anchorWallet) {
       toast.error("Please connect your wallet first")
@@ -75,13 +70,12 @@ export default function PricingPage() {
     }
 
     try {
-      // Set loading state for the selected tier
       setLoading(prev => ({ ...prev, [tier]: true }));
 
-      // Initialize Anchor client for program interaction
+      // Create the client
       const client = createAnchorClient(anchorWallet)
 
-      // Get or create token accounts for both user and SWQuery
+      // Get the user's token account address
       const userTokenAccount = await getAssociatedTokenAddress(
         TEST_USDC_MINT_KEY,
         publicKey
@@ -111,11 +105,10 @@ export default function PricingPage() {
         console.log("Swquery token account doesn't exist, will create it");
       }
 
-      // Create token accounts if they don't exist
+      // If either account doesn't exist, create them first
       if (!userAccountExists || !swqueryAccountExists) {
         const createAccountsTx = new Transaction();
 
-        // Add instructions to create missing token accounts
         if (!userAccountExists) {
           createAccountsTx.add(
             createAssociatedTokenAccountInstruction(
@@ -187,7 +180,6 @@ export default function PricingPage() {
       const seed = Date.now()
 
       try {
-        // Process the escrow creation with the selected plan
         const result = await client.makeEscrow(
           seed,
           tier,
@@ -196,7 +188,6 @@ export default function PricingPage() {
           SWQUERY_AUTHORITY
         )
 
-        // Handle success or failure of the purchase
         if (result.success) {
           toast.success("Successfully purchased plan!")
           console.log("Purchase successful:", {
@@ -223,7 +214,6 @@ export default function PricingPage() {
       }
       
     } catch (error) {
-      // Handle various error scenarios with user-friendly messages
       console.error("Error purchasing plan:", error)
       if (error instanceof Error) {
         if (error.message.includes("User rejected")) {
@@ -237,7 +227,6 @@ export default function PricingPage() {
         toast.error("Failed to purchase plan")
       }
     } finally {
-      // Reset loading state after completion
       setLoading(prev => ({ ...prev, [tier]: false }));
     }
   }, [publicKey, anchorWallet, connection]);

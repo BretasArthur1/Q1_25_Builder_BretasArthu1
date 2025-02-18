@@ -17,7 +17,7 @@ const { BN } = anchor;
 // USDC mint address that matches the TEST_USDC_MINT constant in the Rust program
 // This is the only token mint that the program will accept for payments
 // In production, this would be the real USDC mint address
-const USDC_MINT = new PublicKey("7hUvjnJXF8gbdrSf2HZGnMJb4LwwD8cXM8wRhBEx2QDz");
+const USDC_MINT = new PublicKey("EV7wBneG7FY5Hr2EU1DwZpA5gVKsEGy96RjGGoXt4MD7");
 
 // Create a new keypair to simulate the SWQuery service account
 // In production, this would be SWQuery's actual account that receives payments
@@ -151,7 +151,7 @@ describe("payment-engine tests (localnet)", () => {
        */
 
       // Initialize test parameters with timestamp to ensure unique seeds
-      const seed = new BN(Date.now());  // Use timestamp as seed to ensure uniqueness
+      const seed = new BN(Date.now() + 1);  // Use timestamp as seed to ensure uniqueness
       const planId = new BN(1);  // Using Basic plan (10 USDC, 20 requests)
 
       /**
@@ -292,7 +292,7 @@ describe("payment-engine tests (localnet)", () => {
             systemProgram: anchor.web3.SystemProgram.programId,
             tokenProgram: TOKEN_PROGRAM_ID,
             associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-          } as any)
+          }as any)
           .rpc();
         throw new Error("Transaction should have failed with InvalidMint error");
       } catch (err: any) {
