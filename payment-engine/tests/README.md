@@ -9,6 +9,22 @@ This document explains how to run the tests for the Payment Engine program.
 - Node.js and npm/yarn
 - A Unix-like environment (MacOS, Linux, or WSL for Windows)
 
+## Important: Cluster Configuration
+
+Before running tests, ensure your `Anchor.toml` is configured for localnet:
+
+```toml
+[provider]
+cluster = "localnet"  # Change this if it's set to "devnet"
+wallet = "/Users/your-user/.config/solana/id.json"
+```
+
+This configuration is crucial because:
+- Tests should run on localnet for speed and reliability
+- No SOL is consumed from devnet
+- You have full control over the test environment
+- State can be easily reset between test runs
+
 ## Setup Steps
 
 1. First, ensure you're in the project root directory:
@@ -64,6 +80,11 @@ If you encounter any issues:
 3. **USDC Mint Address Mismatch**
    - Ensure the USDC mint address in `tests/payment-engine.ts` matches the one in `programs/payment-engine/src/constants.rs`
    - The setup script will output the correct address to use
+
+4. **Cluster Configuration Issues**
+   - If tests fail with connection errors, verify your cluster setting in `Anchor.toml`
+   - Ensure you're not accidentally connecting to devnet
+   - Check that your local validator is running: `solana validators`
 
 ## Environment Variables
 
