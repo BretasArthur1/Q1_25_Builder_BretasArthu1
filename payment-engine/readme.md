@@ -1,13 +1,16 @@
-# Payment Engine
+# Payment Engine for SWQuery
 
-A decentralized payment engine built on the Solana blockchain that enables secure payment processing using USDC.
+A decentralized payment engine built on the Solana blockchain that enables secure payment processing using USDC, specifically designed for the SWQuery platform.
 
 ## About the Project
 
-This project implements a decentralized payment system on Solana, featuring:
-- Secure payment processing in USDC
-- Escrow account creation to ensure transaction security
-- Modern web interface for smart contract interaction
+This payment engine is an integral part of SWQuery (Smart Wallet Query), an innovative solution that simplifies interaction with transactions on the Solana blockchain. SWQuery offers a user-friendly interface and a versatile SDK in Rust, integrating natural language processing (NLP) to make blockchain queries intuitive and accessible.
+
+The payment engine implements a decentralized payment system on Solana, featuring:
+- Secure payment processing in USDC for SWQuery services
+- Escrow account creation to ensure transaction security between users and the platform
+- Modern web interface for seamless integration with the SWQuery ecosystem
+- Automated payment processing for query services
 
 ## Deployed Contract
 
@@ -27,7 +30,7 @@ AeaX15Xn4YCSLGBvf1EMdjHViewi28odizgfyQ3RLD9e
 
 ## Frontend Application
 
-The frontend application is built with Next.js and provides a user interface for interacting with the payment engine.
+The frontend application is built with Next.js and provides a user interface for interacting with the payment engine within the SWQuery platform.
 
 ### Running Locally
 
@@ -55,7 +58,7 @@ The frontend application is built with Next.js and provides a user interface for
 ### Frontend Features
 - Modern UI built with Next.js
 - Wallet integration for Solana transactions
-- Real-time payment processing interface
+- Real-time payment processing interface for SWQuery services
 - Responsive design for all devices
 
 ## Smart Contract Testing
